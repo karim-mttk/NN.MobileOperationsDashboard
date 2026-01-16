@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# IDEs
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+.next
+out
+dist
+build
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+README.md
+LICENSE
+.npmrc
+.yarnrc
+
+# Package managers
+yarn.lock
+package-lock.json
+.pnp
+.pnp.js
