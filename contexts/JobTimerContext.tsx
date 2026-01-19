@@ -21,6 +21,7 @@ interface JobTimerContextType {
   toggleBreak: () => void;
   getFormattedTime: (seconds: number) => string;
   getTotalElapsedTime: () => number;
+  getTotalSiteTime: () => number;
 }
 
 const JobTimerContext = createContext<JobTimerContextType | undefined>(undefined);
@@ -147,6 +148,11 @@ export function JobTimerProvider({ children }: { children: ReactNode }) {
     return activeJob.elapsedTime;
   };
 
+  const getTotalSiteTime = (): number => {
+    if (!activeJob) return 0;
+    return activeJob.elapsedTime + activeJob.breakTime;
+  };
+
   return (
     <JobTimerContext.Provider 
       value={{ 
@@ -155,7 +161,8 @@ export function JobTimerProvider({ children }: { children: ReactNode }) {
         stopJob, 
         toggleBreak, 
         getFormattedTime,
-        getTotalElapsedTime
+        getTotalElapsedTime,
+        getTotalSiteTime
       }}
     >
       {children}

@@ -1,210 +1,32 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Clock, MapPin, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Search, MapPin, Calendar, DollarSign, Clock, ChevronLeft, ChevronRight, Bell, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { jobs, getStatusColor, getPaymentStatusColor } from "@/data/jobs";
 
 type ViewType = 'daily' | 'weekly' | 'monthly';
 
-// Mock Data with multiple dates
-const jobs = [
-  // January 13
-  {
-    id: 1,
-    time: '9:00 AM',
-    duration: '1 hr',
-    title: 'Electrical Inspection',
-    customer: {
-      name: 'Acme Corp',
-      address: 'Suite 1200',
-      subAddress: 'Acme Corp HQ',
-      phone: '555-0123',
-      email: 'contact@acme.com'
-    },
-    tech: 'John Doe',
-    jobNo: 'J-2026-03',
-    status: 'Scheduled',
-    color: 'border-l-purple-500', 
-    stripeColor: 'bg-purple-500',
-    assignedTech: 'John Doe',
-    date: new Date(2026, 0, 13),
-    description: 'Electrical Inspection for quarterly safety check.',
-    amount: '$150.00',
-    paymentStatus: 'Unpaid'
-  },
-  {
-    id: 2,
-    time: '12:00 PM',
-    duration: '1 hr',
-    title: 'Fire Alarm Service',
-    customer: {
-      name: 'Acme Corp',
-      address: 'Suite 1200',
-      subAddress: 'Acme Corp HQ',
-      phone: '555-0123',
-      email: 'contact@acme.com'
-    },
-    tech: 'John Doe',
-    jobNo: 'J-2026-04',
-    status: 'Scheduled',
-    color: 'border-l-red-400',
-    stripeColor: 'bg-red-400',
-    assignedTech: 'John Doe',
-    date: new Date(2026, 0, 13),
-    description: "Annual Fire Alarm Testing and certification.",
-    amount: '$300.00',
-    paymentStatus: 'Unpaid'
-  },
-  {
-    id: 3,
-    time: '2:00 PM',
-    duration: '2 hrs',
-    title: 'AC Maintenance',
-    customer: {
-      name: 'Acme Corp',
-      address: 'Suite 1200',
-      subAddress: 'Acme Corp HQ',
-      phone: '555-0123',
-      email: 'contact@acme.com'
-    },
-    tech: 'John Doe',
-    jobNo: 'J-2026-05',
-    status: 'Scheduled',
-    color: 'border-l-blue-400',
-    stripeColor: 'bg-blue-400',
-    assignedTech: 'John Doe',
-    date: new Date(2026, 0, 13),
-    description: 'Routine AC maintenance and filter replacement.',
-    amount: '$200.00',
-    paymentStatus: 'Unpaid'
-  },
-  // January 14
-  {
-    id: 4,
-    time: '10:00 AM',
-    duration: '1.5 hrs',
-    title: 'Plumbing Repair',
-    customer: {
-      name: 'TechStart Inc',
-      address: '456 Tech Ave',
-      subAddress: 'Building A',
-      phone: '555-0456',
-      email: 'ops@techstart.com'
-    },
-    tech: 'Jane Smith',
-    jobNo: 'J-2026-06',
-    status: 'Complete',
-    stripeColor: 'bg-green-500',
-    assignedTech: 'Jane Smith',
-    date: new Date(2026, 0, 14),
-    description: 'Emergency plumbing repair in basement.',
-    amount: '$275.00',
-    paymentStatus: 'Paid in Full'
-  },
-  {
-    id: 5,
-    time: '3:00 PM',
-    duration: '2 hrs',
-    title: 'HVAC Installation',
-    customer: {
-      name: 'BuildRight LLC',
-      address: '789 Construction Blvd',
-      subAddress: 'Site 12',
-      phone: '555-0789',
-      email: 'contact@buildright.com'
-    },
-    tech: 'Mike Johnson',
-    jobNo: 'J-2026-07',
-    status: 'Scheduled',
-    stripeColor: 'bg-blue-500',
-    assignedTech: 'Mike Johnson',
-    date: new Date(2026, 0, 14),
-    description: 'New HVAC system installation.',
-    amount: '$1,250.00',
-    paymentStatus: 'Partial Payment'
-  },
-  // January 15
-  {
-    id: 6,
-    time: '8:00 AM',
-    duration: '3 hrs',
-    title: 'Electrical Wiring',
-    customer: {
-      name: 'Home Depot',
-      address: '321 Retail Park',
-      subAddress: 'Store #442',
-      phone: '555-0321',
-      email: 'maintenance@homedepot.com'
-    },
-    tech: 'John Doe',
-    jobNo: 'J-2026-08',
-    status: 'Scheduled',
-    stripeColor: 'bg-yellow-500',
-    assignedTech: 'John Doe',
-    date: new Date(2026, 0, 15),
-    description: 'Rewiring electrical panel.',
-    amount: '$850.00',
-    paymentStatus: 'Unpaid'
-  },
-  // January 16
-  {
-    id: 7,
-    time: '11:00 AM',
-    duration: '1 hr',
-    title: 'Safety Inspection',
-    customer: {
-      name: 'City Mall',
-      address: '100 Downtown Plaza',
-      subAddress: 'Mall Office',
-      phone: '555-0100',
-      email: 'ops@citymall.com'
-    },
-    tech: 'Jane Smith',
-    jobNo: 'J-2026-09',
-    status: 'Scheduled',
-    stripeColor: 'bg-purple-500',
-    assignedTech: 'Jane Smith',
-    date: new Date(2026, 0, 16),
-    description: 'Monthly safety and compliance inspection.',
-    amount: '$200.00',
-    paymentStatus: 'Unpaid'
-  },
-  // January 20
-  {
-    id: 8,
-    time: '1:00 PM',
-    duration: '2 hrs',
-    title: 'Generator Maintenance',
-    customer: {
-      name: 'Hospital Network',
-      address: '555 Medical Center Dr',
-      subAddress: 'Main Campus',
-      phone: '555-0555',
-      email: 'facilities@hospital.com'
-    },
-    tech: 'Mike Johnson',
-    jobNo: 'J-2026-10',
-    status: 'Scheduled',
-    stripeColor: 'bg-red-500',
-    assignedTech: 'Mike Johnson',
-    date: new Date(2026, 0, 20),
-    description: 'Emergency generator quarterly maintenance.',
-    amount: '$650.00',
-    paymentStatus: 'Unpaid'
-  }
-];
-
 export default function Home() {
-  const router = useRouter();
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 19)); // January 19, 2026
+  const [searchTerm, setSearchTerm] = useState("");
   const [viewType, setViewType] = useState<ViewType>('daily');
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 19)); // Start at Jan 19, 2026
 
-  const handleJobClick = (jobId: number) => {
-    router.push(`/job/${jobId}`);
+  // Helper to get raw color class for stripe
+  const getStripeColor = (status: string) => {
+    switch (status) {
+      case 'Unscheduled': return 'bg-purple-600';
+      case 'Complete': return 'bg-gray-300';
+      case 'Cancelled': return 'bg-red-900';
+      case 'Partially Completed': return 'bg-yellow-400';
+      case 'Scheduled': return 'bg-[#1a4254]';
+      default: return 'bg-gray-200';
+    }
   };
 
-  // Date navigation
+  // Date Navigation
   const navigateDate = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate);
     if (viewType === 'daily') {
@@ -218,201 +40,178 @@ export default function Home() {
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date(2026, 0, 19)); // Current date from context
+    setCurrentDate(new Date(2026, 0, 19)); // Reset to "Today" (mock date)
   };
 
-  // Filter jobs based on view type
-  const getFilteredJobs = () => {
-    if (viewType === 'daily') {
-      return jobs.filter(job => {
-        const jobDate = new Date(job.date);
-        return jobDate.toDateString() === currentDate.toDateString();
-      });
-    } else if (viewType === 'weekly') {
-      const weekStart = new Date(currentDate);
-      weekStart.setDate(currentDate.getDate() - currentDate.getDay());
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      
-      return jobs.filter(job => {
-        const jobDate = new Date(job.date);
-        return jobDate >= weekStart && jobDate <= weekEnd;
-      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    } else if (viewType === 'monthly') {
-      return jobs.filter(job => {
-        const jobDate = new Date(job.date);
-        return jobDate.getMonth() === currentDate.getMonth() && 
-               jobDate.getFullYear() === currentDate.getFullYear();
-      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }
-    return [];
-  };
-
-  // Format date for display
+  // Date Display Helper
   const getDateDisplay = () => {
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    
     if (viewType === 'daily') {
-      return currentDate.toLocaleDateString('en-US', options);
+      return currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     } else if (viewType === 'weekly') {
-      const weekStart = new Date(currentDate);
-      weekStart.setDate(currentDate.getDate() - currentDate.getDay());
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      
-      return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      const start = new Date(currentDate);
+      start.setDate(currentDate.getDate() - currentDate.getDay());
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     } else {
-      return currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      return currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
   };
 
-  const filteredJobs = getFilteredJobs();
+  // Filtering Logic
+  const filteredJobs = jobs.filter((job) => {
+    // 1. Text Search
+    const matchesSearch = 
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.jobNo.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    // 2. Date/View Filter
+    const jobDate = new Date(job.date);
+    if (viewType === 'daily') {
+      return jobDate.toDateString() === currentDate.toDateString();
+    } else if (viewType === 'weekly') {
+      const start = new Date(currentDate);
+      start.setDate(currentDate.getDate() - currentDate.getDay()); // Sunday
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6); // Saturday
+      // Reset hours to compare purely dates if needed, but dates in mock data are usually set to 00:00 or specific times. 
+      // safer to compare timestamps
+      return jobDate >= start && jobDate <= end;
+    } else if (viewType === 'monthly') {
+      return jobDate.getMonth() === currentDate.getMonth() && jobDate.getFullYear() === currentDate.getFullYear();
+    }
+    return false;
+  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());;
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-md mx-auto min-h-screen bg-white shadow-xl overflow-hidden relative">
-        
-        {/* Header */}
-        <header className="px-4 py-4 bg-white sticky top-0 z-10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/95 border-b border-gray-200 shadow-sm">
-          {/* Date Navigation */}
-          <div className="flex items-center justify-between mb-3">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigateDate('prev')}
-              className="h-9 w-9 hover:bg-gray-100"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            
-            <div className="flex flex-col items-center flex-1 px-2">
-              <h1 className="text-base font-bold text-gray-900 text-center">{getDateDisplay()}</h1>
-              <Button 
-                variant="link" 
-                onClick={goToToday}
-                className="text-xs text-blue-600 h-auto p-0 hover:text-blue-700 font-medium"
-              >
-                Today
-              </Button>
-            </div>
-            
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigateDate('next')}
-              className="h-9 w-9 hover:bg-gray-100"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+    <div className="min-h-screen bg-gray-50 pb-24">
+      
+      {/* Header Section */}
+      <div className="bg-white px-6 pt-6 pb-4 shadow-sm sticky top-0 z-10 space-y-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Field Operations</h1>
+            <p className="text-sm text-gray-500">Welcome, John Doe</p>
           </div>
-
-          {/* View Type Selector */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-            <Button
-              variant={viewType === 'daily' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewType('daily')}
-              className={`flex-1 h-9 text-sm font-medium transition-all ${
-                viewType === 'daily' 
-                  ? 'bg-white shadow-sm text-black hover:bg-white' 
-                  : 'hover:bg-gray-200 text-gray-600'
-              }`}
-            >
-              Daily
-            </Button>
-            <Button
-              variant={viewType === 'weekly' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewType('weekly')}
-              className={`flex-1 h-9 text-sm font-medium transition-all ${
-                viewType === 'weekly' 
-                  ? 'bg-white shadow-sm text-black hover:bg-white' 
-                  : 'hover:bg-gray-200 text-gray-600'
-              }`}
-            >
-              Weekly
-            </Button>
-            <Button
-              variant={viewType === 'monthly' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewType('monthly')}
-              className={`flex-1 h-9 text-sm font-medium transition-all ${
-                viewType === 'monthly' 
-                  ? 'bg-white shadow-sm text-black hover:bg-white' 
-                  : 'hover:bg-gray-200 text-gray-600'
-              }`}
-            >
-              Monthly
-            </Button>
+          <div className="flex items-center gap-3">
+            <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <Bell className="h-5 w-5 text-gray-600" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <button className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+              <User className="h-5 w-5 text-gray-600" />
+            </button>
           </div>
-        </header>
+        </div>
 
-        {/* Job List */}
-        <div className="px-4 py-4 space-y-3 pb-8">
-          {filteredJobs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <Calendar className="h-16 w-16 mb-3 opacity-50" />
-              <p className="text-base font-medium text-gray-500">No jobs scheduled</p>
-              <p className="text-sm text-gray-400 mt-1">Check another date or view</p>
-            </div>
-          ) : (
-            filteredJobs.map((job) => (
-              <div key={job.id}>
-                {/* Show date header for weekly/monthly views */}
-                {(viewType === 'weekly' || viewType === 'monthly') && (
-                  filteredJobs.indexOf(job) === 0 || 
-                  new Date(job.date).toDateString() !== new Date(filteredJobs[filteredJobs.indexOf(job) - 1].date).toDateString()
-                ) && (
-                  <div className="text-xs font-bold text-gray-600 mb-3 mt-5 first:mt-0 uppercase tracking-wide px-1">
-                    {new Date(job.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                  </div>
-                )}
+        {/* View Type Toggle */}
+        <div className="flex p-1 bg-gray-100 rounded-lg">
+           {(['daily', 'weekly', 'monthly'] as const).map((type) => (
+             <button
+               key={type}
+               onClick={() => setViewType(type)}
+               className={`flex-1 py-1.5 text-sm font-medium rounded-md capitalize transition-all ${
+                 viewType === type 
+                   ? 'bg-white text-gray-900 shadow-sm' 
+                   : 'text-gray-500 hover:text-gray-700'
+               }`}
+             >
+               {type}
+             </button>
+           ))}
+        </div>
+
+        {/* Date Navigator */}
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 border border-gray-100">
+          <Button variant="ghost" size="icon" onClick={() => navigateDate('prev')} className="h-8 w-8">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex flex-col items-center">
+             <span className="text-sm font-semibold text-gray-900">{getDateDisplay()}</span>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => navigateDate('next')} className="h-8 w-8">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search jobs..."
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all placeholder:text-gray-400 text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Jobs List */}
+      <div className="p-6 space-y-4">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {viewType === 'daily' ? "Today's Schedule" : `${viewType.charAt(0).toUpperCase() + viewType.slice(1)} Overview`}
+          </h2>
+          <button onClick={goToToday} className="text-sm text-blue-600 font-medium hover:underline">
+             Go to Today
+          </button>
+        </div>
+
+        {filteredJobs.length > 0 ? (
+          filteredJobs.map((job) => (
+            <Link href={`/job/${job.id}`} key={job.id} className="block group">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden active:scale-[0.98] transition-transform relative">
                 
-                <div 
-                  onClick={() => handleJobClick(job.id)}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-gray-300 transition-all flex items-stretch overflow-hidden relative active:scale-[0.98] duration-100"
-                >
-                  {/* Colored Status Strip */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${job.stripeColor}`}></div>
-                  
-                  <div className="pl-3 flex w-full gap-3">
-                    {/* Time Column */}
-                    <div className="flex flex-col items-start justify-start pt-0.5 w-16 shrink-0">
-                      <span className="font-bold text-gray-900 text-sm leading-none">{job.time}</span>
-                      <span className="text-xs text-gray-500 mt-1">{job.duration}</span>
-                    </div>
+                {/* Colored Stripe */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStripeColor(job.status)}`} />
 
-                    {/* Details Column */}
-                    <div className="flex flex-col flex-1 gap-1.5 min-w-0">
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-bold text-gray-900 leading-tight text-base">{job.title}</h3>
-                        <Badge variant="secondary" className="text-[10px] px-2 h-5 font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 shrink-0">
-                          {job.status}
-                        </Badge>
+                <div className="p-4 pl-5">
+                  {/* Card Header */}
+                  <div className="flex justify-between items-start gap-3 mb-3">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h3 className="font-semibold text-gray-900 text-base leading-snug mb-1.5">{job.title}</h3>
+                      <div className="flex items-center text-gray-500 text-xs">
+                        <MapPin className="h-3 w-3 mr-1 text-gray-400 shrink-0" />
+                        <span className="truncate">{job.customer.address}</span>
                       </div>
-                      
-                      <div className="flex items-center text-gray-600 text-xs">
-                        <MapPin size={13} className="mr-1.5 shrink-0 text-gray-400" />
-                        <span className="truncate">{job.customer.name} • {job.customer.address}</span>
+                    </div>
+                    <Badge className={`${getStatusColor(job.status)} shadow-none shrink-0 text-[10px] px-2 py-0.5 whitespace-nowrap`}>
+                      {job.status}
+                    </Badge>
+                  </div>
+
+                  {/* Card Details Grid */}
+                  <div className="space-y-2 mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center text-gray-600">
+                        <Clock className="h-3.5 w-3.5 mr-1.5 text-slate-400" />
+                        <span className="text-xs font-medium">{job.time}</span>
                       </div>
-                      
-                      <div className="flex items-center text-gray-400 text-[11px] mt-1 gap-3">
-                        <div className="flex items-center">
-                          <Clock size={12} className="mr-1" />
-                          <span>{job.tech}</span>
-                        </div>
-                        <span className="text-gray-400">•</span>
-                        <span>{job.jobNo}</span>
-                      </div>
+                      <Badge variant="outline" className={`${getPaymentStatusColor(job.paymentStatus)} border-0 text-[10px] px-2 py-0.5 whitespace-nowrap shrink-0`}>
+                         {job.paymentStatus}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center text-gray-500 text-xs">
+                      <span className="font-mono bg-gray-50 px-2 py-0.5 rounded text-gray-600 text-[10px] mr-2">{job.jobNo}</span>
+                      <span className="truncate">{job.customer.name}</span>
                     </div>
                   </div>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-
+            </Link>
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <Calendar className="h-12 w-12 mb-3 opacity-20" />
+            <p className="text-gray-500 font-medium">No jobs found</p>
+            <p className="text-sm text-gray-400">Try changing dates or search terms</p>
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }

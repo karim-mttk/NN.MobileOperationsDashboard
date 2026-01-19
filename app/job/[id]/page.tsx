@@ -217,7 +217,7 @@ export default function JobDetailPage({ params }: PageProps) {
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [showStartWarning, setShowStartWarning] = useState(false);
   
-  const { activeJob, startJob, stopJob, toggleBreak, getFormattedTime } = useJobTimer();
+  const { activeJob, startJob, stopJob, toggleBreak, getFormattedTime, getTotalSiteTime } = useJobTimer();
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -308,20 +308,53 @@ export default function JobDetailPage({ params }: PageProps) {
 
             {/* Timer Display */}
             {isThisJobActive && activeJob && (
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-xl text-white shadow-lg">
-                <div className="text-center">
-                  <div className="text-xs font-medium mb-2 opacity-90 uppercase tracking-wide">
-                    {activeJob.state === 'working' ? 'Working Time' : 'Break Time'}
+              <div className="space-y-3">
+                {/* Work Time - Always Visible */}
+                <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl text-white shadow-lg">
+                  <div className="text-center">
+                    <div className="text-xs font-medium mb-2 opacity-90 uppercase tracking-wide">
+                      Work Time
+                    </div>
+                    <div className="text-4xl font-bold font-mono">
+                      {getFormattedTime(activeJob.elapsedTime)}
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold font-mono mb-3">
-                    {getFormattedTime(activeJob.state === 'working' ? activeJob.elapsedTime : activeJob.breakTime)}
+                </div>
+
+                {/* Break Time - Only shown during break */}
+                {activeJob.state === 'break' && activeJob.breakTime > 0 && (
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 rounded-xl text-white shadow-lg">
+                    <div className="text-center">
+                      <div className="text-xs font-medium mb-2 opacity-90 uppercase tracking-wide">
+                        Break Time
+                      </div>
+                      <div className="text-3xl font-bold font-mono">
+                        {getFormattedTime(activeJob.breakTime)}
+                      </div>
+                    </div>
                   </div>
-                  {startTime && (
-                    <div className="text-xs opacity-80 bg-white/10 inline-block px-3 py-1 rounded-full">
+                )}
+
+                {/* Total Time at Site */}
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl text-white shadow-lg">
+                  <div className="text-center">
+                    <div className="text-xs font-medium mb-2 opacity-90 uppercase tracking-wide">
+                      Total Time at Site
+                    </div>
+                    <div className="text-3xl font-bold font-mono">
+                      {getFormattedTime(activeJob.elapsedTime + activeJob.breakTime)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Start Time Info */}
+                {startTime && (
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 bg-gray-100 inline-block px-3 py-1.5 rounded-full">
                       Started at {startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 

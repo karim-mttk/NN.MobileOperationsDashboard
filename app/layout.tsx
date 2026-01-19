@@ -3,6 +3,7 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import { JobTimerProvider } from '@/contexts/JobTimerContext';
 import ActiveJobBanner from '@/components/ActiveJobBanner';
+import BottomNav from '@/components/BottomNav';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,10 +26,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-50 min-h-screen`}>
+      <body className={`${inter.className} bg-gray-50 min-h-screen pb-24`}>
         <JobTimerProvider>
           <ActiveJobBanner />
           {children}
+          <BottomNav />
         </JobTimerProvider>
       </body>
     </html>
